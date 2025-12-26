@@ -56,6 +56,11 @@ int main(){
     assert(c.type == CommandType::Reject);
     assert(c.reject_reason == RejectReason::BAD);
 
+    line = " ";
+    c = parse_command(line);
+    assert(c.type == CommandType::Reject);
+    assert(c.reject_reason == RejectReason::BAD);
+
     line = "P extra";
     c = parse_command(line);
     assert(c.type == CommandType::Reject);
@@ -66,12 +71,32 @@ int main(){
     assert(c.type == CommandType::Reject);
     assert(c.reject_reason == RejectReason::BAD);
 
+    line = "C 0";
+    c = parse_command(line);
+    assert(c.type == CommandType::Reject);
+    assert(c.reject_reason == RejectReason::BAD);
+
+    line = "C -1";
+    c = parse_command(line);
+    assert(c.type == CommandType::Reject);
+    assert(c.reject_reason == RejectReason::BAD);
+
     line = "N 1 X 101 10";
     c = parse_command(line);
     assert(c.type == CommandType::Reject);
     assert(c.reject_reason == RejectReason::BAD);
 
     line = "N 1 B 0 10";
+    c = parse_command(line);
+    assert(c.type == CommandType::Reject);
+    assert(c.reject_reason == RejectReason::BAD);
+
+    line = "N 1 B 101 0";
+    c = parse_command(line);
+    assert(c.type == CommandType::Reject);
+    assert(c.reject_reason == RejectReason::BAD);
+
+    line = "N 1 B 101 10abc";
     c = parse_command(line);
     assert(c.type == CommandType::Reject);
     assert(c.reject_reason == RejectReason::BAD);
