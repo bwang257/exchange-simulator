@@ -1,3 +1,9 @@
+/*
+parser.hpp
+-----------------
+Defines the Command data model and parser interface.
+*/
+
 #pragma once
 
 #include <cstdint>
