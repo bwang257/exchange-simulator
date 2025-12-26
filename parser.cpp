@@ -16,6 +16,7 @@ using std::vector;
 using std::string;
 using std::istringstream;
 using std::stoi;
+using std::size_t;
 
 using std::invalid_argument;
 using std::out_of_range;
@@ -39,13 +40,43 @@ Command reject_command(int order_id = 0){
     return c;
 }
 
-// Helper function to process a cancel command
+// Helper function to process a cancel command "C <order_id>"
 Command parse_cancel_command(const vector<string> &tokens){
     if (tokens.size() != 2) return reject_command();
     try {
-        int order_id = stoi(tokens[1]);
-        if (order_id <= 0) return reject_command();
+        size_t pos = 0;
+        int order_id = stoi(tokens[1], &pos);
+        if (order_id <= 0 || pos != tokens[1].size()) return reject_command();
         return Command{CommandType::Cancel, order_id};
+    }
+    catch (const invalid_argument& e) {
+        return reject_command();
+    } catch (const out_of_range& e) {
+        return reject_command();
+    }
+}
+
+// Helper function to process a new order command "N <order_id> <side> <price (ticks)> <qty>"
+Command parse_new_command(const vector<string> &tokens){
+    if (tokens.size() != 5) return reject_command();
+    try {
+        size_t pos = 0;
+        int order_id = stoi(tokens[1], &pos);
+        if (order_id <= 0 || pos != tokens[1].size()) return reject_command();
+
+        // side should be "B" (buy) or "S" (sell)
+        if (tokens[2].size() != 1 || (tokens[2][0] != 'B' && tokens[2][0] != 'S')) return reject_command(order_id);
+        Side side = tokens[2][0] == 'B' ? Side::Buy : Side::Sell;
+
+        pos = 0;
+        int price = stoi(tokens[3], &pos);
+        if (price <= 0 || pos != tokens[3].size()) return reject_command(order_id);
+
+        pos = 0;
+        int qty = stoi(tokens[4], &pos);
+        if (qty <= 0 || pos != tokens[4].size()) return reject_command(order_id);
+
+        return Command{CommandType::New, order_id, side, price, qty};
     }
     catch (const invalid_argument& e) {
         return reject_command();
@@ -70,9 +101,7 @@ Command parse_command(const string& line){
         return reject_command();
     }
 
-    // Opcode must be a single character (N, C, P, B, or X).
-    // Only P, B, and X are handled at this stage (Milestone 1).
-    // N and C will be added incrementally in later commits.
+    // op must be a single character (N, C, P, B, or X).
     switch (op[0]){
         case 'P':
             if (tokens.size() == 1) return Command{CommandType::PrintTopOfBook};
@@ -88,6 +117,9 @@ Command parse_command(const string& line){
             break;
         case 'C':
             return parse_cancel_command(tokens);
+            break;
+        case 'N':
+            return parse_new_command(tokens);
             break;
         default:
             return reject_command();
@@ -126,7 +158,17 @@ int main(){
     if (c.type == CommandType::Cancel){
         std::cout << "C works for " << c.order_id << std::endl;
     }
-    
+     
+    c = parse_command("N 35");
+    if (c.type == CommandType::Reject){
+        std::cout << "N validation works" << std::endl;
+    }
+
+    c = parse_command("N 1 B 101 10");
+    if (c.type == CommandType::New && c.order_id == 1 && c.side == Side::Buy && c.price == 101 && c.qty == 10){
+        std::cout << "N works" << std::endl;
+    }
+
     return 0;
 }
 
