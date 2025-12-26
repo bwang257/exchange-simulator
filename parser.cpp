@@ -12,14 +12,15 @@ No I/O or outputs performed.
 #include <string>
 #include <vector>
 
-using std::cout;
-using std::endl;
 using std::vector;
 using std::string;
 using std::istringstream;
+using std::stoi;
+
+using std::invalid_argument;
+using std::out_of_range;
 
 // Splits an input line into whitespace-delimited tokens.
-// Tokenizes only. 
 vector<string> tokenize_input(const string& line){
     istringstream iss(line);
     vector<string> tokens;
@@ -33,7 +34,24 @@ vector<string> tokenize_input(const string& line){
 // Helper function to construct a BAD reject command
 // order_id defaults to 0.
 Command reject_command(int order_id = 0){
-    return Command{CommandType::Reject, order_id};
+    Command c{CommandType::Reject, order_id};
+    c.reject_reason = RejectReason::BAD;
+    return c;
+}
+
+// Helper function to process a cancel command
+Command parse_cancel_command(const vector<string> &tokens){
+    if (tokens.size() != 2) return reject_command();
+    try {
+        int order_id = stoi(tokens[1]);
+        if (order_id <= 0) return reject_command();
+        return Command{CommandType::Cancel, order_id};
+    }
+    catch (const invalid_argument& e) {
+        return reject_command();
+    } catch (const out_of_range& e) {
+        return reject_command();
+    }
 }
 
 
@@ -68,6 +86,11 @@ Command parse_command(const string& line){
             if (tokens.size() == 1) return Command{CommandType::Exit};
             return reject_command();
             break;
+        case 'C':
+            return parse_cancel_command(tokens);
+            break;
+        default:
+            return reject_command();
     }
 }
 
@@ -81,29 +104,30 @@ int main(){
     }
     c = parse_command("B 3243");
     if (c.type == CommandType::Reject){
-        cout << "B Validation Works" << endl;
+        std::cout << "B Validation Works" << std::endl;
     }
     c = parse_command("B");
     if (c.type == CommandType::PrintFullBook){
-        cout << "B works" << endl;
+        std::cout << "B works" << std::endl;
     }
     c = parse_command("P");
     if (c.type == CommandType::PrintTopOfBook){
-        cout << "P Works" << endl;
+        std::cout << "P Works" << std::endl;
     }
     c = parse_command("X");
-    if (c.type == CommandType::Exit) cout << "X works" << endl;
+    if (c.type == CommandType::Exit) std::cout << "X works" << std::endl;
+
+    c= parse_command("C abc");
+    if (c.type == CommandType::Reject){
+        std::cout << "C validation works" << std::endl;
+    }
+
+    c = parse_command("C 3543");
+    if (c.type == CommandType::Cancel){
+        std::cout << "C works for " << c.order_id << std::endl;
+    }
     
     return 0;
 }
-
-
-
-
-
-
-
-
-
 
 
