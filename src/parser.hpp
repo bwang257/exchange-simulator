@@ -7,6 +7,19 @@ Defines the Command data model and parser interface.
 #pragma once
 
 #include <cstdint>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+using std::vector;
+using std::string;
+using std::istringstream;
+using std::stoi;
+using std::size_t;
+
+using std::invalid_argument;
+using std::out_of_range;
 
 enum class CommandType {
     New,
@@ -38,6 +51,12 @@ struct Command {
     RejectReason reject_reason; 
 };
 
+
+vector<string> tokenize_input(const string& line);
+Command reject_command(int order_id);
+Command parse_cancel_command(const vector<string> &tokens);
+Command parse_new_command(const vector<string> &tokens);
+Command parse_command(const string& line);
 
 
 
