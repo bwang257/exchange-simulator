@@ -1,4 +1,0 @@
-/Users/brianwang/Downloads/CodingProjects/exchange_simulator/build/CMakeFiles/parser.dir
-/Users/brianwang/Downloads/CodingProjects/exchange_simulator/build/CMakeFiles/test_parser.dir
-/Users/brianwang/Downloads/CodingProjects/exchange_simulator/build/CMakeFiles/edit_cache.dir
-/Users/brianwang/Downloads/CodingProjects/exchange_simulator/build/CMakeFiles/rebuild_cache.dir
