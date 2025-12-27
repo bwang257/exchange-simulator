@@ -17,3 +17,19 @@ void OrderBook::add_limit(int order_id, Side side, int price, int qty){
         asks.insert({price, qty});
     }
 }
+
+TopOfBook OrderBook::top_of_book() const{
+    TopOfBook tob;
+    
+    if (!bids.empty()){
+        PriceLevel bl{bids.begin()->first, bids.begin()->second};
+        tob.best_bid = bl;
+    }
+
+    if (!asks.empty()){
+        PriceLevel al{asks.begin()->first, asks.begin()->second};
+        tob.best_ask  = al;
+    }
+
+    return tob;
+}
