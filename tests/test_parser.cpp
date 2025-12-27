@@ -101,7 +101,7 @@ int main(){
     assert(c.type == CommandType::Reject);
     assert(c.reject_reason == RejectReason::BAD);
 
-    cout << "All Tests Passed" << endl;
+    cout << "test_parser: PASS" << endl;
     return 0;
 
 

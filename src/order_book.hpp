@@ -1,3 +1,9 @@
+/**
+order_book.hpp
+--------------
+Defines the OrderBook interface and PriceLevel and TopOfBook Structs
+ */
+
 #include <map>
 #include <functional>
 #include <optional>

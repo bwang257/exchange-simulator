@@ -10,10 +10,19 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# Build parser as a library so both app/tests can link it
+# Parser library
 add_library(parser src/parser.cpp)
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# Test executable
+# OrderBook library
+add_library(orderbook src/order_book.cpp)
+target_include_directories(orderbook PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(orderbook PUBLIC parser)
+
+# Parser tests
 add_executable(test_parser tests/test_parser.cpp)
 target_link_libraries(test_parser PRIVATE parser)
+
+# OrderBook tests
+add_executable(test_order_book tests/test_order_book.cpp)
+target_link_libraries(test_order_book PRIVATE orderbook)
