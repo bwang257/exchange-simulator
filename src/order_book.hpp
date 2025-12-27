@@ -50,4 +50,18 @@ private:
 public: 
     void add_limit(int order_id, Side side, int price, int qty);
     TopOfBook top_of_book() const;
+
+    bool has_best_ask() const;
+    bool has_best_bid() const;
+
+    int best_ask_price() const;
+    int best_bid_price() const;
+    int best_ask_quantity() const;
+    int best_bid_quantity() const;
+
+    const Order& best_ask_front() const;
+    const Order& best_bid_front() const;
+
+    void consume_best_ask(int qty);
+    void consume_best_bid(int qty);
 };
