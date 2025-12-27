@@ -62,6 +62,6 @@ public:
     const Order& best_ask_front() const;
     const Order& best_bid_front() const;
 
-    void consume_best_ask(int qty);
-    void consume_best_bid(int qty);
+    std::vector<Order> consume_best_ask(int qty);
+    std::vector<Order> consume_best_bid(int qty);
 };

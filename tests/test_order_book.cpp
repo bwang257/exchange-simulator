@@ -8,10 +8,12 @@ Implements simple unit tests for order_book.cpp
 #include <cassert>
 #include <iostream>
 #include <string>
+#include <vector>
 
 using std::string;
 using std::cout;
 using std::endl;
+using std::vector;
 
 int main(){
 
@@ -24,8 +26,10 @@ int main(){
     assert(ob.has_best_bid() == false);
     
     // consume best ask and bid when empty
-    ob.consume_best_ask(5);
-    ob.consume_best_bid(5);
+    vector<Order> fills = ob.consume_best_ask(5);
+    assert(fills.size() == 0);
+    fills = ob.consume_best_bid(5);
+    assert(fills.size() == 0);
 
     // add bids
     ob.add_limit(1, Side::Buy, 100, 5);
@@ -70,14 +74,32 @@ int main(){
     // check consume best ask
     // best ask: 103, 11
     // best bid: 104, 6
-    ob.consume_best_ask(5);
+    fills = ob.consume_best_ask(5);
+    assert(fills.size() == 1);
+    assert(fills[0].order_id == 6);
+    assert(fills[0].qty_remaining == 5);
     assert(ob.best_ask_price() == 103);
     assert(ob.best_ask_quantity() == 6);
     ob.add_limit(9, Side::Sell, 103, 6);
+
+    // order 6: qty remaining 3
+    // order 7: qty remaining 3
+    // order 9: qty remaining 6
     assert(ob.best_ask_quantity() == 12);
-    ob.consume_best_ask(7);
+    fills = ob.consume_best_ask(7);
+    assert(fills.size() == 3);
+    assert(fills[0].order_id == 6);
+    assert(fills[0].qty_remaining == 3);
+    assert(fills[1].order_id == 7);
+    assert(fills[1].qty_remaining == 3);
+    assert(fills[2].order_id == 9);
+    assert(fills[2].qty_remaining == 1);
+
     assert(ob.best_ask_quantity() == 5);
-    ob.consume_best_ask(5);
+    fills = ob.consume_best_ask(5);
+    assert(fills.size() == 1);
+    assert(fills[0].order_id == 9);
+    assert(fills[0].qty_remaining == 5); 
     assert(ob.has_best_ask());
     assert(ob.best_ask_price() == 109);
     assert(ob.best_ask_quantity() == 5);
@@ -96,7 +118,10 @@ int main(){
     assert(ob.best_bid_quantity() == 15);
 
     ob.add_limit(10, Side::Buy, 103, 10);
-    ob.consume_best_bid(99999);
+    fills = ob.consume_best_bid(99999);
+    assert(fills.size() == 1);
+    assert(fills[0].order_id == 10);
+    assert(fills[0].qty_remaining == 10); 
     assert(ob.best_bid_price() == 100);
     assert(ob.best_bid_quantity() == 15);
 
