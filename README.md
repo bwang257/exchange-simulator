@@ -3,7 +3,7 @@
 A simplified single-symbol exchange simulator implemented in C++.
 
 Current Status
-- Milestone 1 complete: command parsing + validation
+- Milestone 2 complete: limit order book that supports limit order by price level
 - Supported commands: P, B, X, C, N
 
 Build
