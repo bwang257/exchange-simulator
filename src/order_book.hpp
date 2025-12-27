@@ -27,6 +27,13 @@ struct Order {
 struct Level {
     int total_qty = 0;
     std::deque<Order> orders;
+
+    Level() = default;
+
+    Level(Order o){
+        orders.push_back(o);
+        total_qty+= o.qty_remaining;
+    }
 };
 
 struct TopOfBook {
