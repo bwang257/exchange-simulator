@@ -15,7 +15,6 @@ struct TopOfBook {
 
 };
 
-
 class OrderBook {
 private:
     std::map<int, int> asks;
