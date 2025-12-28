@@ -19,6 +19,11 @@ struct PriceLevel {
     int qty;
 };
 
+struct Fill { 
+    int resting_order_id;
+    int qty_filled;
+};
+
 struct Order {
     int order_id;
     int qty_remaining;
@@ -62,6 +67,6 @@ public:
     const Order& best_ask_front() const;
     const Order& best_bid_front() const;
 
-    std::vector<Order> consume_best_ask(int qty);
-    std::vector<Order> consume_best_bid(int qty);
+    std::vector<Fill> consume_best_ask(int qty);
+    std::vector<Fill> consume_best_bid(int qty);
 };

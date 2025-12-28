@@ -51,8 +51,8 @@ const Order& OrderBook::best_bid_front() const {
 
 // Orderbook function to "execute" a specified qty of an the best ask
 // returns list of orders filled/partially filled
-vector<Order> OrderBook::consume_best_ask(int qty){
-    vector<Order> fills;
+vector<Fill> OrderBook::consume_best_ask(int qty){
+    vector<Fill> fills;
     if (!has_best_ask()) return fills;
     auto asks_it = asks.begin();
     auto order_it = asks_it->second.orders.begin();
@@ -62,7 +62,7 @@ vector<Order> OrderBook::consume_best_ask(int qty){
         
         // if qty >= qty of the first order
         if (qty >= order_it->qty_remaining){
-            fills.push_back(Order{order_it->order_id, order_it-> qty_remaining});
+            fills.push_back(Fill{order_it->order_id, order_it-> qty_remaining});
             qty -= order_it->qty_remaining;
             asks_it->second.total_qty -= order_it->qty_remaining;
             order_it = asks_it->second.orders.erase(order_it);
@@ -72,7 +72,7 @@ vector<Order> OrderBook::consume_best_ask(int qty){
             }
         }
         else {
-            fills.push_back(Order{order_it->order_id, qty});
+            fills.push_back(Fill{order_it->order_id, qty});
             order_it->qty_remaining -= qty;
             asks_it->second.total_qty -= qty;
             qty = 0;
@@ -83,8 +83,8 @@ vector<Order> OrderBook::consume_best_ask(int qty){
 
 // Orderbook function to "execute" a specified qty of an the best ask
 // returns list of orders filled/partially filled
-vector<Order> OrderBook::consume_best_bid(int qty){
-    vector<Order> fills;
+vector<Fill> OrderBook::consume_best_bid(int qty){
+    vector<Fill> fills;
     if (!has_best_bid()) return fills;
 
     auto bids_it = bids.begin();
@@ -95,7 +95,7 @@ vector<Order> OrderBook::consume_best_bid(int qty){
         
         // if qty >= qty of the first order
         if (qty >= order_it->qty_remaining){
-            fills.push_back(Order{order_it->order_id, order_it-> qty_remaining});
+            fills.push_back(Fill{order_it->order_id, order_it-> qty_remaining});
             qty -= order_it->qty_remaining;
             bids_it->second.total_qty -= order_it->qty_remaining;
             order_it = bids_it->second.orders.erase(order_it);
@@ -105,7 +105,7 @@ vector<Order> OrderBook::consume_best_bid(int qty){
             }
         }
         else {
-            fills.push_back(Order{order_it->order_id, qty});
+            fills.push_back(Fill{order_it->order_id, qty});
             order_it->qty_remaining -= qty;
             bids_it->second.total_qty -= qty;
             qty = 0;

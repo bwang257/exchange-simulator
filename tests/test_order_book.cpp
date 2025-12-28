@@ -26,7 +26,7 @@ int main(){
     assert(ob.has_best_bid() == false);
     
     // consume best ask and bid when empty
-    vector<Order> fills = ob.consume_best_ask(5);
+    vector<Fill> fills = ob.consume_best_ask(5);
     assert(fills.size() == 0);
     fills = ob.consume_best_bid(5);
     assert(fills.size() == 0);
@@ -76,8 +76,8 @@ int main(){
     // best bid: 104, 6
     fills = ob.consume_best_ask(5);
     assert(fills.size() == 1);
-    assert(fills[0].order_id == 6);
-    assert(fills[0].qty_remaining == 5);
+    assert(fills[0].resting_order_id == 6);
+    assert(fills[0].qty_filled == 5);
     assert(ob.best_ask_price() == 103);
     assert(ob.best_ask_quantity() == 6);
     ob.add_limit(9, Side::Sell, 103, 6);
@@ -88,18 +88,18 @@ int main(){
     assert(ob.best_ask_quantity() == 12);
     fills = ob.consume_best_ask(7);
     assert(fills.size() == 3);
-    assert(fills[0].order_id == 6);
-    assert(fills[0].qty_remaining == 3);
-    assert(fills[1].order_id == 7);
-    assert(fills[1].qty_remaining == 3);
-    assert(fills[2].order_id == 9);
-    assert(fills[2].qty_remaining == 1);
+    assert(fills[0].resting_order_id == 6);
+    assert(fills[0].qty_filled == 3);
+    assert(fills[1].resting_order_id == 7);
+    assert(fills[1].qty_filled == 3);
+    assert(fills[2].resting_order_id == 9);
+    assert(fills[2].qty_filled == 1);
 
     assert(ob.best_ask_quantity() == 5);
     fills = ob.consume_best_ask(5);
     assert(fills.size() == 1);
-    assert(fills[0].order_id == 9);
-    assert(fills[0].qty_remaining == 5); 
+    assert(fills[0].resting_order_id == 9);
+    assert(fills[0].qty_filled == 5); 
     assert(ob.has_best_ask());
     assert(ob.best_ask_price() == 109);
     assert(ob.best_ask_quantity() == 5);
@@ -120,8 +120,8 @@ int main(){
     ob.add_limit(10, Side::Buy, 103, 10);
     fills = ob.consume_best_bid(99999);
     assert(fills.size() == 1);
-    assert(fills[0].order_id == 10);
-    assert(fills[0].qty_remaining == 10); 
+    assert(fills[0].resting_order_id == 10);
+    assert(fills[0].qty_filled == 10); 
     assert(ob.best_bid_price() == 100);
     assert(ob.best_bid_quantity() == 15);
 
