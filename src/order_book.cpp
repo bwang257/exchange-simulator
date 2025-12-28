@@ -123,19 +123,29 @@ void OrderBook::add_limit(int order_id, Side side, int price, int qty){
         if (bids.count(price)){
             bids[price].orders.push_back(o);
             bids[price].total_qty+=qty;
+
+            auto it = --bids[price].orders.end();
+            live_orders.insert({order_id, Location{side, price, it}});
             return;
         }
         Level l(o);
         bids.insert({price, l});
+        auto it = bids[price].orders.begin();
+        live_orders.insert({order_id, Location{side, price, it}});
     }
     else {
         if (asks.count(price)){
             asks[price].orders.push_back(o);
             asks[price].total_qty +=qty;
+
+            auto it = --asks[price].orders.end();
+            live_orders.insert({order_id, Location{side, price, it}});
             return;
         }
         Level l(o);
         asks.insert({price, l});
+        auto it = asks[price].orders.begin();
+        live_orders.insert({order_id, Location{side, price, it}});
     }
 }
 
