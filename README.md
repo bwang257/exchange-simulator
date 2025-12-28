@@ -13,3 +13,5 @@ Build
 Tests
 - ./build/test_parser
 - ./build/test_order_book
+- ./build/test_matching_engine
+
