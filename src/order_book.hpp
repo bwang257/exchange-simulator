@@ -51,6 +51,11 @@ struct TopOfBook {
     std::optional<PriceLevel> best_bid;
 };
 
+enum class CancelResult {
+    Cancelled,
+    Unknown
+};
+
 class OrderBook {
 private:
     std::map<int, Level> asks;
@@ -74,4 +79,6 @@ public:
 
     std::vector<Fill> consume_best_ask(int qty);
     std::vector<Fill> consume_best_bid(int qty);
+
+    CancelResult cancel(int order_id);
 };

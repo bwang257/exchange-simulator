@@ -13,8 +13,9 @@ using std::min;
 
 
 vector<Trade> MatchingEngine::process_new_order(int order_id, Side side, int price, int qty){
-    vector<Trade> trades = side == Side::Buy ? order_match_buy(order_id, price, qty) : order_match_sell(order_id, price, qty);
-    if (qty > 0) ob.add_limit(order_id, side, price, qty);
+    int remaining_qty = qty;
+    vector<Trade> trades = side == Side::Buy ? order_match_buy(order_id, price, remaining_qty) : order_match_sell(order_id, price, remaining_qty);
+    if (remaining_qty > 0) ob.add_limit(order_id, side, price, remaining_qty);
     return trades;
 }
 
@@ -55,4 +56,8 @@ vector<Trade> MatchingEngine::order_match_sell(int incoming_id, int incoming_pri
 
 TopOfBook MatchingEngine::top_of_book() const{
     return ob.top_of_book();
+}
+
+CancelResult MatchingEngine::cancel_order(int order_id){
+    return ob.cancel(order_id);
 }

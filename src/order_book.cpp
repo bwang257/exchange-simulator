@@ -169,3 +169,30 @@ TopOfBook OrderBook::top_of_book() const{
     return tob;
 }
 
+CancelResult OrderBook::cancel(int id){
+    auto live_orders_it = live_orders.find(id);
+    if (live_orders_it != live_orders.end()){
+        auto loc_it = live_orders.find(id);
+        if (loc_it == live_orders.end()) return CancelResult::Unknown;
+
+        Location loc = loc_it->second;
+        if (loc.side == Side::Buy){
+            bids[loc.price].total_qty -= loc.order_it->qty_remaining;
+            bids[loc.price].orders.erase(loc.order_it);
+            if (bids[loc.price].orders.empty()){
+                bids.erase(loc.price);
+            }
+            live_orders.erase(id);
+            return CancelResult::Cancelled;
+        } else {
+            asks[loc.price].total_qty -= loc.order_it->qty_remaining;
+            asks[loc.price].orders.erase(loc.order_it);
+            if (asks[loc.price].orders.empty()){
+                asks.erase(loc.price);
+            }
+            live_orders.erase(id);
+            return CancelResult::Cancelled;
+        }
+    }
+    return CancelResult::Unknown;
+}

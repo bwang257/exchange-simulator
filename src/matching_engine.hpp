@@ -26,4 +26,5 @@ private:
 public:
     std::vector<Trade> process_new_order(int order_id, Side side, int price, int qty);
     TopOfBook top_of_book() const;
+    CancelResult cancel_order(int order_id);
 };
