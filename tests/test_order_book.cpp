@@ -32,7 +32,8 @@ int main(){
     assert(fills.size() == 0);
 
     // add bids
-    ob.add_limit(1, Side::Buy, 100, 5);
+    assert(ob.add_limit(1, Side::Buy, 100, 5) == AddResult::Added);
+    assert(ob.add_limit(1, Side::Sell, 300, 99) == AddResult::Duplicate);
     ob.add_limit(2, Side::Buy, 100, 10);
     ob.add_limit(3, Side::Buy, 103, 7);
 

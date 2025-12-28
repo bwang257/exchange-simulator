@@ -22,4 +22,5 @@ mkdir build && cmake -S . -B build && cmake --build build
 Run all tests:
 ./build/test_parser
 ./build/test_order_book
-./build/test_matching_engine
+./build/test_matching_basic
+./build/test_matching_cancel
