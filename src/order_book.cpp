@@ -6,6 +6,7 @@ and ability to add limit orders
  */
 
 #include "order_book.hpp"
+#include <iterator>
 
 using std::vector;
 
@@ -65,6 +66,7 @@ vector<Fill> OrderBook::consume_best_ask(int qty){
             fills.push_back(Fill{order_it->order_id, order_it-> qty_remaining});
             qty -= order_it->qty_remaining;
             asks_it->second.total_qty -= order_it->qty_remaining;
+            live_orders.erase(order_it->order_id);
             order_it = asks_it->second.orders.erase(order_it);
             if (asks_it->second.orders.empty()){
                 asks.erase(asks_it);
@@ -98,6 +100,7 @@ vector<Fill> OrderBook::consume_best_bid(int qty){
             fills.push_back(Fill{order_it->order_id, order_it-> qty_remaining});
             qty -= order_it->qty_remaining;
             bids_it->second.total_qty -= order_it->qty_remaining;
+            live_orders.erase(order_it->order_id);
             order_it = bids_it->second.orders.erase(order_it);
             if (bids_it->second.orders.empty()){
                 bids.erase(bids_it);
@@ -122,9 +125,9 @@ void OrderBook::add_limit(int order_id, Side side, int price, int qty){
     if (side == Side::Buy){
         if (bids.count(price)){
             bids[price].orders.push_back(o);
+            auto it = std::prev(bids[price].orders.end());
             bids[price].total_qty+=qty;
 
-            auto it = --bids[price].orders.end();
             live_orders.insert({order_id, Location{side, price, it}});
             return;
         }
@@ -138,7 +141,7 @@ void OrderBook::add_limit(int order_id, Side side, int price, int qty){
             asks[price].orders.push_back(o);
             asks[price].total_qty +=qty;
 
-            auto it = --asks[price].orders.end();
+            auto it = std::prev(asks[price].orders.end());
             live_orders.insert({order_id, Location{side, price, it}});
             return;
         }
