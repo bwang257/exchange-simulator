@@ -49,7 +49,7 @@ const Order& OrderBook::best_bid_front() const {
     return bids.begin()->second.orders.front();
 }
 
-// Orderbook function to "execute" a specified qty of an the best ask
+// Orderbook function to "execute" a specified qty of the best ask
 // returns list of orders filled/partially filled
 vector<Fill> OrderBook::consume_best_ask(int qty){
     vector<Fill> fills;
@@ -81,7 +81,7 @@ vector<Fill> OrderBook::consume_best_ask(int qty){
     return fills;
 }
 
-// Orderbook function to "execute" a specified qty of an the best ask
+// Orderbook function to "execute" a specified qty of an the best bid
 // returns list of orders filled/partially filled
 vector<Fill> OrderBook::consume_best_bid(int qty){
     vector<Fill> fills;

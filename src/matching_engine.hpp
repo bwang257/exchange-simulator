@@ -20,8 +20,10 @@ struct Trade {
 class MatchingEngine{
 private:
     OrderBook ob;
-    std::vector<Trade> order_match(int incoming_id, Side incoming_side, int incoming_price, int& remaining_qty);
+    std::vector<Trade> order_match_buy(int incoming_id, int incoming_price, int& remaining_qty);
+    std::vector<Trade> order_match_sell(int incoming_id, int incoming_price, int& remaining_qty);
 
 public:
     std::vector<Trade> process_new_order(int order_id, Side side, int price, int qty);
+    TopOfBook top_of_book() const;
 };
