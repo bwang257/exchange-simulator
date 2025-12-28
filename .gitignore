@@ -1,0 +1,15 @@
+*.exe
+*.out
+*.o
+*.obj
+
+# CMake build output
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# macOS
+.DS_Store
