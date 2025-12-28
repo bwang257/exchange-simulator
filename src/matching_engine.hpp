@@ -16,6 +16,11 @@ struct Trade {
     int qty;
 };
 
+struct NewOrderResponse {
+    bool accepted;
+    std::optional<RejectReason> reject_reason;
+    std::vector<Trade> trades;
+};
 
 class MatchingEngine{
 private:
@@ -24,7 +29,7 @@ private:
     std::vector<Trade> order_match_sell(int incoming_id, int incoming_price, int& remaining_qty);
 
 public:
-    std::vector<Trade> process_new_order(int order_id, Side side, int price, int qty);
+    NewOrderResponse process_new_order(int order_id, Side side, int price, int qty);
     TopOfBook top_of_book() const;
     CancelResult cancel_order(int order_id);
 };

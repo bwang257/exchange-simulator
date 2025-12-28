@@ -21,10 +21,6 @@ enum class CommandType {
     Reject
 };
 
-enum class RejectReason {
-    BAD
-};
-
 struct Command {
     CommandType type;
 

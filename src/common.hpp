@@ -10,3 +10,8 @@ enum class Side {
     Buy,
     Sell
 };
+
+enum class RejectReason {
+    BAD,
+    DUP
+};

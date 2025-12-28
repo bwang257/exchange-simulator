@@ -12,11 +12,15 @@ using std::vector;
 using std::min;
 
 
-vector<Trade> MatchingEngine::process_new_order(int order_id, Side side, int price, int qty){
+NewOrderResponse MatchingEngine::process_new_order(int order_id, Side side, int price, int qty){
+    vector<Trade> trades;
+    if (ob.has_order(order_id)) return NewOrderResponse{false, RejectReason::DUP, trades};
+    if (price <= 0 || qty <= 0) return NewOrderResponse{false, RejectReason::BAD, trades};
+    
     int remaining_qty = qty;
-    vector<Trade> trades = side == Side::Buy ? order_match_buy(order_id, price, remaining_qty) : order_match_sell(order_id, price, remaining_qty);
+    trades = side == Side::Buy ? order_match_buy(order_id, price, remaining_qty) : order_match_sell(order_id, price, remaining_qty);
     if (remaining_qty > 0) ob.add_limit(order_id, side, price, remaining_qty);
-    return trades;
+    return NewOrderResponse{true, std::nullopt, trades};
 }
 
 vector<Trade> MatchingEngine::order_match_buy(int incoming_id, int incoming_price, int& remaining_qty){

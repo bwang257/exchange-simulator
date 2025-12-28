@@ -50,6 +50,11 @@ const Order& OrderBook::best_bid_front() const {
     return bids.begin()->second.orders.front();
 }
 
+// Orderbook query function that returns whether an order_id can be added
+bool OrderBook::has_order(int id) const {
+    return seen_ids.count(id);
+}
+
 // Orderbook function to "execute" a specified qty of the best ask
 // returns list of orders filled/partially filled
 vector<Fill> OrderBook::consume_best_ask(int qty){
@@ -119,8 +124,12 @@ vector<Fill> OrderBook::consume_best_bid(int qty){
 
 
 // OrderBook function to add a new limit order to the orderbook
-void OrderBook::add_limit(int order_id, Side side, int price, int qty){
+AddResult OrderBook::add_limit(int order_id, Side side, int price, int qty){
 
+    if (seen_ids.count(order_id)){
+        return AddResult::Duplicate;
+    }
+    seen_ids.insert(order_id);
     Order o{order_id, qty};
     if (side == Side::Buy){
         if (bids.count(price)){
@@ -129,12 +138,13 @@ void OrderBook::add_limit(int order_id, Side side, int price, int qty){
             bids[price].total_qty+=qty;
 
             live_orders.insert({order_id, Location{side, price, it}});
-            return;
+            return AddResult::Added;
         }
         Level l(o);
         bids.insert({price, l});
         auto it = bids[price].orders.begin();
         live_orders.insert({order_id, Location{side, price, it}});
+        return AddResult::Added;
     }
     else {
         if (asks.count(price)){
@@ -143,12 +153,13 @@ void OrderBook::add_limit(int order_id, Side side, int price, int qty){
 
             auto it = std::prev(asks[price].orders.end());
             live_orders.insert({order_id, Location{side, price, it}});
-            return;
+            return AddResult::Added;
         }
         Level l(o);
         asks.insert({price, l});
         auto it = asks[price].orders.begin();
         live_orders.insert({order_id, Location{side, price, it}});
+        return AddResult::Added;
     }
 }
 
