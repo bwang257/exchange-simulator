@@ -139,6 +139,23 @@ int main(){
     assert(!tob.best_bid.has_value());
     assert(!tob.best_ask.has_value());
 
+    // Cancel middle order perserves FIFO of remaining orders
+    res = eng.process_new_order(23, Side::Sell, 100, 1);
+    assert(res.accepted == true);
+    res = eng.process_new_order(24, Side::Sell, 100, 1);
+    assert(res.accepted == true);
+    res = eng.process_new_order(25, Side::Sell, 100, 1);
+    assert(res.accepted == true);
+    assert(eng.cancel_order(24) == CancelResult::Cancelled);
+    res = eng.process_new_order(26, Side::Buy, 100, 1);
+    assert(res.accepted == true);
+    assert(res.trades[0].sell_id == 23);
+    res = eng.process_new_order(27, Side::Buy, 100, 1);
+    assert(res.accepted == true);
+    assert(res.trades[0].sell_id == 25);
+    assert(!tob.best_bid.has_value());
+    assert(!tob.best_ask.has_value());
+
     cout << "test_matching_cancel: PASS" << endl;
 
     return 0;
