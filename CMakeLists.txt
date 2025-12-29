@@ -21,7 +21,6 @@ target_link_libraries(test_parser PRIVATE parser)
 # OrderBook library
 add_library(orderbook src/order_book.cpp)
 target_include_directories(orderbook PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(orderbook PUBLIC parser)
 
 # OrderBook tests
 add_executable(test_order_book tests/test_order_book.cpp)
