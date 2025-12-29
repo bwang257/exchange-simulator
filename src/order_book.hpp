@@ -11,13 +11,7 @@ Implements FIFO order queues per price level
 #include <unordered_set>
 #include <list>
 #include <functional>
-#include <optional>
 #include "common.hpp"
- 
-struct PriceLevel {
-    int price;
-    int qty;
-};
 
 struct Fill { 
     int resting_order_id;
@@ -45,11 +39,6 @@ struct Location {
     Side side;
     int price;
     std::list<Order>::iterator order_it;
-};
-
-struct TopOfBook {
-    std::optional<PriceLevel> best_ask;
-    std::optional<PriceLevel> best_bid;
 };
 
 enum class CancelResult {

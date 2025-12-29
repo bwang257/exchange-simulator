@@ -9,13 +9,6 @@ Defines the Matching Engine interface and Trade struct
 #include "order_book.hpp"
 #include <vector>
 
-struct Trade {
-    int buy_id;
-    int sell_id;
-    int price;
-    int qty;
-};
-
 struct NewOrderResponse {
     bool accepted;
     std::optional<RejectReason> reject_reason;
