@@ -42,6 +42,20 @@ int main(){
     ob.add_limit(5, Side::Sell, 120, 3);
     ob.add_limit(6, Side::Sell, 103, 8);
     ob.add_limit(7, Side::Sell, 103, 3);
+    BookSnapshot bs = ob.print_book();
+    assert(bs.asks.size() == 3);
+    assert(bs.asks[0].price == 103);
+    assert(bs.asks[0].qty == 11);
+    assert(bs.asks[1].price == 109);
+    assert(bs.asks[1].qty == 5);
+    assert(bs.asks[2].price == 120);
+    assert(bs.asks[2].qty == 3);
+
+    assert(bs.bids.size() == 2);
+    assert(bs.bids[0].price == 103);
+    assert(bs.bids[0].qty == 7);
+    assert(bs.bids[1].price == 100);
+    assert(bs.bids[1].qty == 15);
 
     // check if top of book is accurate
     tob = ob.top_of_book();

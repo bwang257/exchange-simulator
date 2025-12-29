@@ -180,6 +180,19 @@ TopOfBook OrderBook::top_of_book() const{
     return tob;
 }
 
+// Orderbook function to return aggregate bid/ask data
+BookSnapshot OrderBook::print_book() const{
+    BookSnapshot bs;
+    for (const auto& pl : bids){
+        bs.bids.push_back(PriceLevel{pl.first, pl.second.total_qty});
+    }
+    for (const auto& pl : asks){
+        bs.asks.push_back(PriceLevel{pl.first, pl.second.total_qty});
+    }
+    return bs;
+}
+
+// Orderbook function to cancel an order by id in O(1)
 CancelResult OrderBook::cancel(int id){
     auto live_orders_it = live_orders.find(id);
     if (live_orders_it != live_orders.end()){

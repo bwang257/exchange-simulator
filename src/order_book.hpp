@@ -58,9 +58,10 @@ private:
     std::unordered_map<int, Location> live_orders;
     std::unordered_set<int> seen_ids;
 
-public: 
+public:
     AddResult add_limit(int order_id, Side side, int price, int qty);
     TopOfBook top_of_book() const;
+    BookSnapshot print_book() const;
 
     bool has_best_ask() const;
     bool has_best_bid() const;
