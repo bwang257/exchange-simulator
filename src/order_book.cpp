@@ -6,6 +6,7 @@ and ability to add limit orders
  */
 
 #include "order_book.hpp"
+#include <iterator>
 
 using std::vector;
 
@@ -49,6 +50,11 @@ const Order& OrderBook::best_bid_front() const {
     return bids.begin()->second.orders.front();
 }
 
+// Orderbook query function that returns whether an order_id can be added
+bool OrderBook::has_order(int id) const {
+    return seen_ids.count(id);
+}
+
 // Orderbook function to "execute" a specified qty of the best ask
 // returns list of orders filled/partially filled
 vector<Fill> OrderBook::consume_best_ask(int qty){
@@ -65,6 +71,7 @@ vector<Fill> OrderBook::consume_best_ask(int qty){
             fills.push_back(Fill{order_it->order_id, order_it-> qty_remaining});
             qty -= order_it->qty_remaining;
             asks_it->second.total_qty -= order_it->qty_remaining;
+            live_orders.erase(order_it->order_id);
             order_it = asks_it->second.orders.erase(order_it);
             if (asks_it->second.orders.empty()){
                 asks.erase(asks_it);
@@ -98,6 +105,7 @@ vector<Fill> OrderBook::consume_best_bid(int qty){
             fills.push_back(Fill{order_it->order_id, order_it-> qty_remaining});
             qty -= order_it->qty_remaining;
             bids_it->second.total_qty -= order_it->qty_remaining;
+            live_orders.erase(order_it->order_id);
             order_it = bids_it->second.orders.erase(order_it);
             if (bids_it->second.orders.empty()){
                 bids.erase(bids_it);
@@ -116,26 +124,42 @@ vector<Fill> OrderBook::consume_best_bid(int qty){
 
 
 // OrderBook function to add a new limit order to the orderbook
-void OrderBook::add_limit(int order_id, Side side, int price, int qty){
+AddResult OrderBook::add_limit(int order_id, Side side, int price, int qty){
 
+    if (seen_ids.count(order_id)){
+        return AddResult::Duplicate;
+    }
+    seen_ids.insert(order_id);
     Order o{order_id, qty};
     if (side == Side::Buy){
         if (bids.count(price)){
             bids[price].orders.push_back(o);
+            auto it = std::prev(bids[price].orders.end());
             bids[price].total_qty+=qty;
-            return;
+
+            live_orders.insert({order_id, Location{side, price, it}});
+            return AddResult::Added;
         }
         Level l(o);
         bids.insert({price, l});
+        auto it = bids[price].orders.begin();
+        live_orders.insert({order_id, Location{side, price, it}});
+        return AddResult::Added;
     }
     else {
         if (asks.count(price)){
             asks[price].orders.push_back(o);
             asks[price].total_qty +=qty;
-            return;
+
+            auto it = std::prev(asks[price].orders.end());
+            live_orders.insert({order_id, Location{side, price, it}});
+            return AddResult::Added;
         }
         Level l(o);
         asks.insert({price, l});
+        auto it = asks[price].orders.begin();
+        live_orders.insert({order_id, Location{side, price, it}});
+        return AddResult::Added;
     }
 }
 
@@ -156,3 +180,43 @@ TopOfBook OrderBook::top_of_book() const{
     return tob;
 }
 
+// Orderbook function to return aggregate bid/ask data
+BookSnapshot OrderBook::print_book() const{
+    BookSnapshot bs;
+    for (const auto& pl : bids){
+        bs.bids.push_back(PriceLevel{pl.first, pl.second.total_qty});
+    }
+    for (const auto& pl : asks){
+        bs.asks.push_back(PriceLevel{pl.first, pl.second.total_qty});
+    }
+    return bs;
+}
+
+// Orderbook function to cancel an order by id in O(1)
+CancelResult OrderBook::cancel(int id){
+    auto live_orders_it = live_orders.find(id);
+    if (live_orders_it != live_orders.end()){
+        auto loc_it = live_orders.find(id);
+        if (loc_it == live_orders.end()) return CancelResult::Unknown;
+
+        Location loc = loc_it->second;
+        if (loc.side == Side::Buy){
+            bids[loc.price].total_qty -= loc.order_it->qty_remaining;
+            bids[loc.price].orders.erase(loc.order_it);
+            if (bids[loc.price].orders.empty()){
+                bids.erase(loc.price);
+            }
+            live_orders.erase(id);
+            return CancelResult::Cancelled;
+        } else {
+            asks[loc.price].total_qty -= loc.order_it->qty_remaining;
+            asks[loc.price].orders.erase(loc.order_it);
+            if (asks[loc.price].orders.empty()){
+                asks.erase(loc.price);
+            }
+            live_orders.erase(id);
+            return CancelResult::Cancelled;
+        }
+    }
+    return CancelResult::Unknown;
+}

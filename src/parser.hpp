@@ -6,6 +6,7 @@ Defines the Command data model and parser interface.
 
 #pragma once
 
+#include "common.hpp"
 #include <cstdint>
 #include <sstream>
 #include <string>
@@ -18,15 +19,6 @@ enum class CommandType {
     PrintFullBook,
     Exit,
     Reject
-};
-
-enum class Side {
-    Buy,
-    Sell
-};
-
-enum class RejectReason {
-    BAD
 };
 
 struct Command {

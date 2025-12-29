@@ -21,7 +21,6 @@ target_link_libraries(test_parser PRIVATE parser)
 # OrderBook library
 add_library(orderbook src/order_book.cpp)
 target_include_directories(orderbook PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(orderbook PUBLIC parser)
 
 # OrderBook tests
 add_executable(test_order_book tests/test_order_book.cpp)
@@ -33,5 +32,8 @@ target_include_directories(matching_engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/sr
 target_link_libraries(matching_engine PUBLIC orderbook)
 
 # Matching Engine tests
-add_executable(test_matching_engine tests/test_matching_engine.cpp)
-target_link_libraries(test_matching_engine PRIVATE matching_engine)
+add_executable(test_matching_basic tests/test_matching_basic.cpp)
+target_link_libraries(test_matching_basic PRIVATE matching_engine)
+
+add_executable(test_matching_cancel tests/test_matching_cancel.cpp)
+target_link_libraries(test_matching_cancel PRIVATE matching_engine)

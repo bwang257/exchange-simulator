@@ -11,11 +11,40 @@ uses price-time priority matching
 using std::vector;
 using std::min;
 
+void MatchingEngine::add_listener(IEventListener* l){
+    listeners.push_back(l);
+}
 
-vector<Trade> MatchingEngine::process_new_order(int order_id, Side side, int price, int qty){
-    vector<Trade> trades = side == Side::Buy ? order_match_buy(order_id, price, qty) : order_match_sell(order_id, price, qty);
-    if (qty > 0) ob.add_limit(order_id, side, price, qty);
-    return trades;
+NewOrderResponse MatchingEngine::process_new_order(int order_id, Side side, int price, int qty){
+    vector<Trade> trades;
+    if (ob.has_order(order_id)){
+        for (auto* l : listeners){
+            l->on_reject(order_id, RejectReason::DUP);
+        }
+        return NewOrderResponse{false, RejectReason::DUP, trades};
+    }
+    if (price <= 0 || qty <= 0){
+        for (auto* l : listeners){
+            l->on_reject(order_id, RejectReason::BAD);
+        }
+        return NewOrderResponse{false, RejectReason::BAD, trades};
+    }
+    
+    // Order Acknowledged
+    for (auto* l : listeners){
+        l->on_ack(order_id);
+    }
+
+    int remaining_qty = qty;
+    trades = side == Side::Buy ? order_match_buy(order_id, price, remaining_qty) : order_match_sell(order_id, price, remaining_qty);
+    for (const Trade& trade : trades){
+        for (auto* l : listeners){
+            l->on_trade(trade);
+        }
+    }
+    
+    if (remaining_qty > 0) ob.add_limit(order_id, side, price, remaining_qty);
+    return NewOrderResponse{true, std::nullopt, trades};
 }
 
 vector<Trade> MatchingEngine::order_match_buy(int incoming_id, int incoming_price, int& remaining_qty){
@@ -54,5 +83,25 @@ vector<Trade> MatchingEngine::order_match_sell(int incoming_id, int incoming_pri
 
 
 TopOfBook MatchingEngine::top_of_book() const{
-    return ob.top_of_book();
+    TopOfBook tob = ob.top_of_book();
+    for (auto* l : listeners){
+        l->on_tob(tob);
+    }
+    return tob;
+}
+
+BookSnapshot MatchingEngine::print_book() const{
+    BookSnapshot bs = ob.print_book();
+    for (auto * l : listeners){
+        l->on_book(bs);
+    }
+    return bs;
+}
+
+CancelResult MatchingEngine::cancel_order(int order_id){
+    CancelResult res = ob.cancel(order_id);
+    for (auto* l : listeners){
+        l->on_cancel(order_id, res);
+    }
+    return res;
 }

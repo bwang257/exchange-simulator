@@ -6,6 +6,7 @@ A simplified single-symbol exchange simulator implemented in C++.
 - **Milestone 1 complete**: Command parsing and validation
 - **Milestone 2 complete**: Limit order book with FIFO queues per price level
 - **Milestone 3 complete**: Matching engine with price-time priority matching
+- **Milestone 4 complete**: Order cancellation + Event system (Observer pattern)
 
 ## Features
 - Command parsing (P, B, X, C, N)
@@ -13,6 +14,9 @@ A simplified single-symbol exchange simulator implemented in C++.
 - Price-time priority order matching
 - Trade execution with automatic order matching
 - Partial fills support
+- Order cancellation with FIFO preservation
+- Event-driven architecture (Observer pattern)
+- Fully integrated application with command processing
 
 ## Build
 Requires CMake ≥ 3.16 and a C++17 compiler:
@@ -22,4 +26,5 @@ mkdir build && cmake -S . -B build && cmake --build build
 Run all tests:
 ./build/test_parser
 ./build/test_order_book
-./build/test_matching_engine
+./build/test_matching_basic
+./build/test_matching_cancel

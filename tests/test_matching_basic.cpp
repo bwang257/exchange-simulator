@@ -1,10 +1,11 @@
 /**
-test_matching_engine.cpp
+test_matching_basic.cpp
 --------------
-Implements simple unit tests for matching_engine.cpp
+Implements basic unit tests for order matching functionality
  */
 
 #include "matching_engine.hpp"
+#include "common.hpp"
 #include <cassert>
 #include <iostream>
 #include <string>
@@ -23,7 +24,7 @@ int main(){
 
     // Test adding resting orders
     res =  eng.process_new_order(1, Side::Buy, 104, 10);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     assert(trades.size() == 0);
     res = eng.process_new_order(2, Side::Sell, 105, 6);
@@ -35,15 +36,21 @@ int main(){
 
     // test invalid orders
     res =  eng.process_new_order(1, Side::Sell, 104, 10);
-    assert(res.result == NewOrderResult::DuplicateID);
+    assert(res.accepted == false);
+    assert(res.reject_reason.has_value());
+    assert(res.reject_reason.value() == RejectReason::DUP);
     assert(res.trades.size() == 0);
 
     res =  eng.process_new_order(3, Side::Sell, 0, 10);
-    assert(res.result == NewOrderResult::Invalid);
+    assert(res.accepted == false);
+    assert(res.reject_reason.has_value());
+    assert(res.reject_reason.value() == RejectReason::BAD);
     assert(res.trades.size() == 0);
 
     res =  eng.process_new_order(4, Side::Sell, 104, 0);
-    assert(res.result == NewOrderResult::Invalid);
+    assert(res.accepted == false);
+    assert(res.reject_reason.has_value());
+    assert(res.reject_reason.value() == RejectReason::BAD);
     assert(res.trades.size() == 0);
 
     // Buys:
@@ -53,7 +60,7 @@ int main(){
 
     // Single fill (full fill incoming/resting)
     res = eng.process_new_order(3, Side::Buy, 110, 6);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     tob = eng.top_of_book();
     assert(trades.size() == 1);
@@ -73,7 +80,7 @@ int main(){
 
     // Partial fill of incoming, remainder rests
     res = eng.process_new_order(4, Side::Sell, 103, 14);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     tob = eng.top_of_book();
     assert(trades.size() == 1);
@@ -93,7 +100,7 @@ int main(){
 
     // Partial fill of resting (resting order survives)
     res = eng.process_new_order(5, Side::Buy, 103, 2);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     tob = eng.top_of_book();
     assert(trades.size() == 1);
@@ -113,11 +120,11 @@ int main(){
 
     // FIFO within a price level
     res = eng.process_new_order(6, Side::Sell, 103, 3);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     assert(trades.empty());
     res = eng.process_new_order(7, Side::Sell, 103, 2);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     assert(trades.empty());
     tob = eng.top_of_book();
@@ -125,7 +132,7 @@ int main(){
     assert(tob.best_ask.value().qty == 7);
 
     res = eng.process_new_order(8, Side::Buy, 104, 2);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     tob = eng.top_of_book();
     assert(trades.size() == 1);
@@ -135,7 +142,7 @@ int main(){
     assert(trades[0].qty == 2);
 
     res = eng.process_new_order(9, Side::Buy, 104, 3);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     tob = eng.top_of_book();
     assert(trades.size() == 1);
@@ -145,7 +152,7 @@ int main(){
     assert(trades[0].qty == 3);
 
     res = eng.process_new_order(10, Side::Buy, 104, 2);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     tob = eng.top_of_book();
     assert(trades.size() == 1);
@@ -163,15 +170,15 @@ int main(){
     
     // Sweep across multiple price levels
     res = eng.process_new_order(11, Side::Sell, 100, 4);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     assert(trades.empty());
     res = eng.process_new_order(12, Side::Sell, 101, 5);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     assert(trades.empty());
     res = eng.process_new_order(13, Side::Buy, 105, 7);
-    assert(res.result == NewOrderResult::Accepted);
+    assert(res.accepted == true);
     trades = res.trades;
     tob = eng.top_of_book();
     assert(trades.size() == 2);
@@ -193,115 +200,8 @@ int main(){
     // Sells:
     // 12: 101 @ 2
 
-    // Cancel unknown order
-    assert(eng.cancel_order(999) == CancelResult::Unknown);
-    tob = eng.top_of_book();
-    assert(!tob.best_bid.has_value());
-    assert(tob.best_ask.has_value());
-    assert(tob.best_ask.value().price == 101);
-    assert(tob.best_ask.value().qty == 2);
-
-    // remove single resting order
-    assert(eng.cancel_order(12) == CancelResult::Cancelled);
-    tob = eng.top_of_book();
-    assert(!tob.best_bid.has_value());
-    assert(!tob.best_ask.has_value());
-
-    // Buys:
-    // 
-    // Sells:
-    // 
-
-    // cancel reduces aggregated qty at the level
-    res = eng.process_new_order(14, Side::Buy, 100, 4);
-    assert(res.result == NewOrderResult::Accepted);
-    res = eng.process_new_order(15, Side::Buy, 100, 7);
-    assert(res.result == NewOrderResult::Accepted);
-    tob = eng.top_of_book();
-    assert(tob.best_bid.has_value());
-    assert(!tob.best_ask.has_value());
-    assert(tob.best_bid.value().price == 100);
-    assert(tob.best_bid.value().qty == 11);
-    assert(eng.cancel_order(15) == CancelResult::Cancelled);
-    tob = eng.top_of_book();
-    assert(tob.best_bid.has_value());
-    assert(!tob.best_ask.has_value());
-    assert(tob.best_bid.value().price == 100);
-    assert(tob.best_bid.value().qty == 4);
-
-    // Buys:
-    // 14: 100 @ 4
-    // Sells:
-    // 
-
-    // Cancel removes the entire price level if it becomes empty
-    assert(eng.cancel_order(14) == CancelResult::Cancelled);
-    tob = eng.top_of_book();
-    assert(!tob.best_bid.has_value());
-    assert(!tob.best_ask.has_value());
-
-    // Cancel after full fill returns Unknown
-    res = eng.process_new_order(16, Side::Buy, 100, 4);
-    assert(res.result == NewOrderResult::Accepted);
-    res = eng.process_new_order(17, Side::Sell, 100, 4);
-    assert(res.result == NewOrderResult::Accepted);
-    assert(res.trades.size() == 1);
-    assert(eng.cancel_order(16) == CancelResult::Unknown);
-    assert(eng.cancel_order(17) == CancelResult::Unknown);
-
-    // Buys:
-    //
-    // Sells:
-    // 
-
-    // Cancel twice: first Cancelled, second Unknown
-    res = eng.process_new_order(18, Side::Sell, 100, 4);
-    assert(res.result == NewOrderResult::Accepted);
-    tob = eng.top_of_book();
-    assert(!tob.best_bid.has_value());
-    assert(tob.best_ask.has_value());
-    assert(tob.best_ask.value().price == 100);
-    assert(tob.best_ask.value().qty == 4);
-    assert(eng.cancel_order(18) == CancelResult::Cancelled);
-    tob = eng.top_of_book();
-    assert(!tob.best_bid.has_value());
-    assert(!tob.best_ask.has_value());
-    assert(eng.cancel_order(18) == CancelResult::Unknown);
-    tob = eng.top_of_book();
-    assert(!tob.best_bid.has_value());
-    assert(!tob.best_ask.has_value());
-
-    // Cancel affects future trades
-    res = eng.process_new_order(19, Side::Sell, 100, 4);
-    assert(res.result == NewOrderResult::Accepted);
-    assert(eng.cancel_order(19) == CancelResult::Cancelled);
-    res = eng.process_new_order(20, Side::Buy, 100, 4);
-    assert(res.result == NewOrderResult::Accepted);
-    assert(res.trades.size() == 0);
-     assert(eng.cancel_order(20) == CancelResult::Cancelled);
-
-    // Cancel partial quantity
-    res = eng.process_new_order(21, Side::Sell, 100, 10);
-    assert(res.result == NewOrderResult::Accepted);
-    res = eng.process_new_order(22, Side::Buy, 100, 6);
-    assert(res.result == NewOrderResult::Accepted);
-    trades = res.trades;
-    assert(trades.size() == 1);
-    assert(trades[0].qty == 6);
-    assert(trades[0].buy_id == 22);
-    assert(trades[0].sell_id == 21);
-
-    tob = eng.top_of_book();
-    assert(!tob.best_bid.has_value());
-    assert(tob.best_ask.has_value());
-    assert(tob.best_ask.value().price == 100);
-    assert(tob.best_ask.value().qty == 4);
-    assert(eng.cancel_order(21) == CancelResult::Cancelled);
-    tob = eng.top_of_book();
-    assert(!tob.best_bid.has_value());
-    assert(!tob.best_ask.has_value());
-
-    cout << "test_matching_engine: PASS" << endl;
+    cout << "test_matching_basic: PASS" << endl;
 
     return 0;
 }
+
