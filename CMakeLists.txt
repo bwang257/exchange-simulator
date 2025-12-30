@@ -46,3 +46,8 @@ target_link_libraries(test_matching_cancel PRIVATE matching_engine)
 add_executable(test_golden tests/test_golden.cpp)
 target_link_libraries(test_golden PRIVATE matching_engine parser)
 target_include_directories(test_golden PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
+# Performance tests
+add_executable(test_performance tests/test_performance.cpp)
+target_link_libraries(test_performance PRIVATE matching_engine parser)
+target_include_directories(test_performance PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/tests)
