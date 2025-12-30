@@ -125,3 +125,14 @@ Command parse_command(const string& line){
             return reject_command();
     }
 }
+
+// Parses a batch of input lines into a vector of Command objects.
+vector<Command> parse_commands(const string& batch){
+    vector<Command> commands;
+    istringstream iss(batch);
+    string input;
+    while (getline(iss, input)){
+        commands.push_back(parse_command(input));
+    }
+    return commands;
+}
