@@ -10,6 +10,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Main executable
+add_executable(exchange_simulator src/main.cpp)
+target_link_libraries(exchange_simulator PRIVATE matching_engine parser)
+
 # Parser library
 add_library(parser src/parser.cpp)
 target_include_directories(parser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -37,3 +41,8 @@ target_link_libraries(test_matching_basic PRIVATE matching_engine)
 
 add_executable(test_matching_cancel tests/test_matching_cancel.cpp)
 target_link_libraries(test_matching_cancel PRIVATE matching_engine)
+
+# Golden tests
+add_executable(test_golden tests/test_golden.cpp)
+target_link_libraries(test_golden PRIVATE matching_engine parser)
+target_include_directories(test_golden PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)

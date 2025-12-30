@@ -39,6 +39,7 @@ Command reject_command(int order_id);
 Command parse_cancel_command(const std::vector<std::string> &tokens);
 Command parse_new_command(const std::vector<std::string> &tokens);
 Command parse_command(const std::string& line);
+std::vector<Command> parse_commands(const std::string& batch);
 
 
 

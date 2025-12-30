@@ -1,70 +1,27 @@
 #include <iostream>
-#include <string>
+#include <fstream>
 #include "matching_engine.hpp"
-#include "events.hpp"
+#include "printer_listener.hpp"
 #include "parser.hpp"
+#include <string>
 
 using std::cin;
 using std::cout;
 using std::endl;
+using std::cerr;
+using std::ifstream;
+using std::istream;
+using std::ofstream;
+using std::ostream;
+using std::getline;
+using std::string;
 
-struct PrinterListener : IEventListener {
-    
-    void on_ack(int order_id) override {
-        cout << "ACK " << order_id << " ";
-    }
-
-    void on_reject(int order_id, RejectReason rr) override{
-        if (rr == RejectReason::BAD){
-            cout << "REJ " << order_id << " BAD ";
-        }
-        else if (rr == RejectReason::DUP){
-            cout << "REJ " << order_id << " DUP ";
-        }
-    }
-
-    void on_trade(const Trade& trd) override{
-        cout << "TRD " << trd.buy_id << " " << trd.sell_id << " " << trd.price << " " << trd.qty << " ";
-    }
-
-    void on_cancel(int order_id, CancelResult cr) override {
-        if (cr == CancelResult::Cancelled){
-            cout << "CXL " << order_id << " ";
-        }
-        if (cr == CancelResult::Unknown){
-            cout << "REJ " << order_id << "UNK ";
-        }
-    }
-
-    void on_tob(const TopOfBook& tob) override {
-        if (tob.best_bid.has_value()){
-            cout << "TOB BID " << tob.best_bid.value().price << " " << tob.best_bid.value().qty << " ";
-        }
-        if (tob.best_ask.has_value()){
-            cout << "TOB ASK " << tob.best_ask.value().price << " " << tob.best_ask.value().qty << " ";
-        }
-    }
-
-    void on_book(const BookSnapshot& bs) override{
-        for (auto pl : bs.bids){
-            cout << "BOOK BID " << pl.price << " " << pl.qty << " ";
-        }
-        for (auto pl : bs.asks){
-            cout << "BOOK ASK " << pl.price << " " << pl.qty << " ";
-        }
-    }
-};
-
-
-int main(){
-    MatchingEngine engine;
-    PrinterListener printer;
-    engine.add_listener(&printer);
-
-    std::string input;
-    do {
-        std::getline(cin, input);
-        auto cmd = parse_command(input);  
+void process_commands(istream& input, MatchingEngine& engine, PrinterListener& printer) {
+    string line;
+    while (getline(input, line)) {
+        if (line == "X") break;
+        
+        auto cmd = parse_command(line);
         switch (cmd.type) {
             case CommandType::New:
                 engine.process_new_order(cmd.order_id, cmd.side, cmd.price, cmd.qty);
@@ -82,11 +39,31 @@ int main(){
                 engine.print_book();
                 break;
             case CommandType::Exit:
-                break;
+                return;
             default:
                 break;
-        } 
-        cout << "\n"; 
-    } while (input != "X");
-    return 0;    
+        }
+    }
+}
+
+int main(int argc, char* argv[]){
+    MatchingEngine engine;
+    PrinterListener printer;
+    engine.add_listener(&printer);
+
+    if (argc > 1){
+        ifstream input_file(argv[1]);
+        if (!input_file.is_open()){
+            cerr << "Could not open input file " << argv[1] << endl;
+            return 1;
+        }
+        // process commands from file
+        process_commands(input_file, engine, printer);
+        input_file.close();
+    }
+    else {
+        // read line by line from stdin
+        process_commands(cin, engine, printer);
+    }
+    return 0;  
 }
