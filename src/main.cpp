@@ -16,7 +16,7 @@ using std::ostream;
 using std::getline;
 using std::string;
 
-void process_commands(istream& input, ostream& output, MatchingEngine& engine, PrinterListener& printer) {
+void process_commands(istream& input, MatchingEngine& engine, PrinterListener& printer) {
     string line;
     while (getline(input, line)) {
         if (line == "X") break;
@@ -43,7 +43,6 @@ void process_commands(istream& input, ostream& output, MatchingEngine& engine, P
             default:
                 break;
         }
-        output << "\n";
     }
 }
 
@@ -59,12 +58,12 @@ int main(int argc, char* argv[]){
             return 1;
         }
         // process commands from file
-        process_commands(input_file, cout, engine, printer);
+        process_commands(input_file, engine, printer);
         input_file.close();
     }
     else {
         // read line by line from stdin
-        process_commands(cin, cout, engine, printer);
+        process_commands(cin, engine, printer);
     }
     return 0;  
 }

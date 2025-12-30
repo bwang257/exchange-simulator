@@ -10,49 +10,52 @@ Defines PrinterListener for outputting events to stdout
 #include "common.hpp"
 #include <iostream>
 
+using std::cout;
+using std::endl;
+
 struct PrinterListener : IEventListener {
     
     void on_ack(int order_id) override {
-        std::cout << "ACK " << order_id << " ";
+        cout << "ACK " << order_id << endl;
     }
 
     void on_reject(int order_id, RejectReason rr) override{
         if (rr == RejectReason::BAD){
-            std::cout << "REJ " << order_id << " BAD ";
+            cout << "REJ " << order_id << " BAD" << endl;
         }
         else if (rr == RejectReason::DUP){
-            std::cout << "REJ " << order_id << " DUP ";
+            cout << "REJ " << order_id << " DUP" << endl;
         }
     }
 
     void on_trade(const Trade& trd) override{
-        std::cout << "TRD " << trd.buy_id << " " << trd.sell_id << " " << trd.price << " " << trd.qty << " ";
+        cout << "TRD " << trd.buy_id << " " << trd.sell_id << " " << trd.price << " " << trd.qty << endl;
     }
 
     void on_cancel(int order_id, CancelResult cr) override {
         if (cr == CancelResult::Cancelled){
-            std::cout << "CXL " << order_id << " ";
+            cout << "CXL " << order_id << endl;
         }
         if (cr == CancelResult::Unknown){
-            std::cout << "REJ " << order_id << "UNK ";
+            cout << "REJ " << order_id << " UNK" << endl;
         }
     }
 
     void on_tob(const TopOfBook& tob) override {
         if (tob.best_bid.has_value()){
-            std::cout << "TOB BID " << tob.best_bid.value().price << " " << tob.best_bid.value().qty << " ";
+            cout << "TOB BID " << tob.best_bid.value().price << " " << tob.best_bid.value().qty << endl;
         }
         if (tob.best_ask.has_value()){
-            std::cout << "TOB ASK " << tob.best_ask.value().price << " " << tob.best_ask.value().qty << " ";
+            cout << "TOB ASK " << tob.best_ask.value().price << " " << tob.best_ask.value().qty << endl;
         }
     }
 
     void on_book(const BookSnapshot& bs) override{
         for (auto pl : bs.bids){
-            std::cout << "BOOK BID " << pl.price << " " << pl.qty << " ";
+            cout << "BOOK BID " << pl.price << " " << pl.qty << endl;
         }
         for (auto pl : bs.asks){
-            std::cout << "BOOK ASK " << pl.price << " " << pl.qty << " ";
+            cout << "BOOK ASK " << pl.price << " " << pl.qty << endl;
         }
     }
 };
