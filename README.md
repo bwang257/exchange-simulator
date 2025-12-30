@@ -40,6 +40,8 @@ mkdir build && cmake -S . -B build && cmake --build build
 ./build/test_order_book
 ./build/test_matching_basic
 ./build/test_matching_cancel
+./build/test_golden tests/data/tight_spread.txt tests/data/tight_spread_expected.txt
+./build/test_performance tests/data/benchmark_100k.txt
 ```
 
 ## Build
@@ -154,6 +156,45 @@ python3 scripts/generate_test.py -n 1000 -o test_input.txt --seed 42
 ./build/test_golden tests/data/benchmark_100k.txt tests/data/benchmark_100k_expected.txt
 ```
 
+### Performance Analysis
+The performance profiler measures pure logic latency and throughput using RAII ScopedTimer pattern. Timing excludes parsing and I/O overhead to measure only the core matching engine logic.
+
+**Run Performance Analysis:**
+```bash
+./build/test_performance <input_file>
+```
+
+**Example:**
+```bash
+./build/test_performance tests/data/benchmark_100k.txt
+```
+
+**Measurement Approach:**
+- **Start Timer**: Immediately before calling `matching_engine.process_new_order()` or `cancel_order()`
+- **Stop Timer**: Immediately after the engine returns (using RAII destructor)
+- **Excludes**: Parsing, I/O, and other overhead that wouldn't exist in hardware/FPGA implementations
+
+**Metrics Reported:**
+- **Total Operations**: Number of operations processed (separate counts for orders and cancels)
+- **Mean Latency**: Average time per operation (microseconds)
+- **P99 Latency**: 99th percentile latency (microseconds)
+- **Throughput**: Operations processed per second
+
+**Example Output:**
+```
+=== Order Performance Statistics ===
+Total Operations: 69841
+Mean Latency: 1.60935 us
+P99 Latency: 4.292 us
+Throughput: 327136 Orders/sec
+
+=== Cancel Performance Statistics ===
+Total Operations: 20100
+Mean Latency: 0.344536 us
+P99 Latency: 1 us
+Throughput: 94148.6 Cancels/sec
+```
+
 ## Project Status
 
 **Completed Milestones:**
@@ -162,6 +203,7 @@ python3 scripts/generate_test.py -n 1000 -o test_input.txt --seed 42
 - **Milestone 3**: Matching engine with price-time priority matching
 - **Milestone 4**: Order cancellation + Event system (Observer pattern)
 - **Milestone 5**: File batch processing and golden tests
+- **Milestone 6**: Performance analysis (latency and throughput metrics)
 
 **Project Structure:**
 ```
@@ -170,6 +212,7 @@ exchange_simulator/
 │   ├── parser.*      # Command parsing
 │   ├── order_book.*  # Order book implementation
 │   ├── matching_engine.*  # Matching logic
+│   ├── performance_profiler.*  # Performance instrumentation
 │   └── main.cpp      # Application entry point
 ├── tests/            # Test files
 │   ├── test_*.cpp    # Unit tests
