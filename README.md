@@ -1,4 +1,5 @@
 # Exchange Simulator (C++)
+*To be expanded and revised with updated C++ knowledge*
 
 A simplified single-symbol limit order book exchange simulator implemented in C++17. Features price-time priority matching, order cancellation, and event-driven architecture.
 
@@ -180,7 +181,7 @@ The performance profiler measures pure logic latency and throughput using RAII S
 - **P99 Latency**: 99th percentile latency (microseconds)
 - **Throughput**: Operations processed per second
 
-**Example Output:**
+**Output for (my) Macbook M4 Air:**
 ```
 === Order Performance Statistics ===
 Total Operations: 69841
