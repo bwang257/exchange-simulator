@@ -20,8 +20,8 @@ int main(){
     // empty order book
     OrderBook ob;
     TopOfBook tob = ob.top_of_book();
-    assert(!tob.best_ask.has_value());
-    assert(!tob.best_bid.has_value());
+    assert(!tob.has_ask);
+    assert(!tob.has_bid);
     assert(ob.has_best_ask() == false);
     assert(ob.has_best_bid() == false);
     
@@ -59,16 +59,16 @@ int main(){
 
     // check if top of book is accurate
     tob = ob.top_of_book();
-    assert(tob.best_ask.has_value());
-    assert(tob.best_bid.has_value());
+    assert(tob.has_ask);
+    assert(tob.has_bid);
 
     // check if queries are accurate
     // best ask: 103, 11
     // best bid: 103, 7
-    assert(tob.best_ask->price == 103);
-    assert(tob.best_ask->qty == 11);
-    assert(tob.best_bid->price == 103);
-    assert(tob.best_bid->qty == 7);
+    assert(tob.ask.price == 103);
+    assert(tob.ask.qty == 11);
+    assert(tob.bid.price == 103);
+    assert(tob.bid.qty == 7);
     assert(ob.has_best_ask() == true);
     assert(ob.has_best_bid() == true);
     assert(ob.best_ask_price() == 103);
@@ -83,8 +83,8 @@ int main(){
     // tob updates so that best bid price != ask price
     ob.add_limit(8, Side::Buy, 104, 6);
     tob = ob.top_of_book();
-    assert(tob.best_bid->price == 104);
-    assert(tob.best_bid->qty == 6);
+    assert(tob.bid.price == 104);
+    assert(tob.bid.qty == 6);
 
     // check consume best ask
     // best ask: 103, 11

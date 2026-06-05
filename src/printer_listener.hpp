@@ -16,46 +16,47 @@ using std::endl;
 struct PrinterListener : IEventListener {
     
     void on_ack(int order_id) override {
-        cout << "ACK " << order_id << endl;
+        std::cout << "ACK " << order_id << '\n';
     }
 
     void on_reject(int order_id, RejectReason rr) override{
         if (rr == RejectReason::BAD){
-            cout << "REJ " << order_id << " BAD" << endl;
+            std::cout << "REJ " << order_id << " BAD" << '\n';
         }
         else if (rr == RejectReason::DUP){
-            cout << "REJ " << order_id << " DUP" << endl;
+            std::cout << "REJ " << order_id << " DUP" << '\n';
         }
     }
 
     void on_trade(const Trade& trd) override{
-        cout << "TRD " << trd.buy_id << " " << trd.sell_id << " " << trd.price << " " << trd.qty << endl;
+        std::cout << "TRD " << trd.buy_id << " " << trd.sell_id << " " << trd.price << " " << trd.qty << '\n';
     }
 
     void on_cancel(int order_id, CancelResult cr) override {
         if (cr == CancelResult::Cancelled){
-            cout << "CXL " << order_id << endl;
+            std::cout << "CXL " << order_id << '\n';
         }
         if (cr == CancelResult::Unknown){
-            cout << "REJ " << order_id << " UNK" << endl;
+            std::cout << "REJ " << order_id << " UNK" << '\n';
         }
     }
 
     void on_tob(const TopOfBook& tob) override {
-        if (tob.best_bid.has_value()){
-            cout << "TOB BID " << tob.best_bid.value().price << " " << tob.best_bid.value().qty << endl;
+        if (tob.has_bid){
+            std::cout << "TOB BID " << tob.bid.price << " " << tob.bid.qty << '\n';
         }
-        if (tob.best_ask.has_value()){
-            cout << "TOB ASK " << tob.best_ask.value().price << " " << tob.best_ask.value().qty << endl;
+
+        if (tob.has_ask){
+            std::cout << "TOB ASK " << tob.ask.price << " " << tob.ask.qty << '\n';
         }
     }
 
     void on_book(const BookSnapshot& bs) override{
         for (auto pl : bs.bids){
-            cout << "BOOK BID " << pl.price << " " << pl.qty << endl;
+            std::cout << "BOOK BID " << pl.price << " " << pl.qty << '\n';
         }
         for (auto pl : bs.asks){
-            cout << "BOOK ASK " << pl.price << " " << pl.qty << endl;
+            std::cout << "BOOK ASK " << pl.price << " " << pl.qty << '\n';
         }
     }
 };
