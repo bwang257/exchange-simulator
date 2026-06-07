@@ -44,11 +44,11 @@ public:
     }
     
     void on_tob(const TopOfBook& tob) override {
-        if (tob.best_bid.has_value()) {
-            output << "TOB BID " << tob.best_bid.value().price << " " << tob.best_bid.value().qty << endl;
+        if (tob.has_bid) {
+            output << "TOB BID " << tob.bid.price << " " << tob.bid.qty << endl;
         }
-        if (tob.best_ask.has_value()) {
-            output << "TOB ASK " << tob.best_ask.value().price << " " << tob.best_ask.value().qty << endl;
+        if (tob.has_ask) {
+            output << "TOB ASK " << tob.ask.price << " " << tob.ask.qty << endl;
         }
     }
     

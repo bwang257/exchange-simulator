@@ -10,6 +10,7 @@ Defines the Matching Engine interface and Trade struct
 #include <vector>
 #include "events.hpp"
 
+// TODO: Refactor to remove std::optional
 struct NewOrderResponse {
     bool accepted;
     std::optional<RejectReason> reject_reason;

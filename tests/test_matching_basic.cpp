@@ -31,8 +31,8 @@ int main(){
     trades = res.trades;
     assert(trades.size() == 0);
     tob = eng.top_of_book();
-    assert(tob.best_ask.has_value());
-    assert(tob.best_bid.has_value());
+    assert(tob.has_ask);
+    assert(tob.has_bid);
 
     // test invalid orders
     res =  eng.process_new_order(1, Side::Sell, 104, 10);
@@ -68,10 +68,10 @@ int main(){
     assert(trades[0].sell_id == 2);
     assert(trades[0].price == 105);
     assert(trades[0].qty == 6);
-    assert(tob.best_bid.has_value());
-    assert(!tob.best_ask.has_value());
-    assert(tob.best_bid.value().price == 104);
-    assert(tob.best_bid.value().qty == 10);
+    assert(tob.has_bid);
+    assert(!tob.has_ask);
+    assert(tob.bid.price == 104);
+    assert(tob.bid.qty == 10);
 
     // Buys:
     // 1: 104 @ 10
@@ -88,10 +88,10 @@ int main(){
     assert(trades[0].sell_id == 4);
     assert(trades[0].price == 104);
     assert(trades[0].qty == 10);
-    assert(!tob.best_bid.has_value());
-    assert(tob.best_ask.has_value());
-    assert(tob.best_ask.value().price == 103);
-    assert(tob.best_ask.value().qty == 4);
+    assert(!tob.has_bid);
+    assert(tob.has_ask);
+    assert(tob.ask.price == 103);
+    assert(tob.ask.qty == 4);
 
     // Buys:
     // 
@@ -108,10 +108,10 @@ int main(){
     assert(trades[0].sell_id == 4);
     assert(trades[0].price == 103);
     assert(trades[0].qty == 2);
-    assert(!tob.best_bid.has_value());
-    assert(tob.best_ask.has_value());
-    assert(tob.best_ask.value().price == 103);
-    assert(tob.best_ask.value().qty == 2);
+    assert(!tob.has_bid);
+    assert(tob.has_ask);
+    assert(tob.ask.price == 103);
+    assert(tob.ask.qty == 2);
 
     // Buys:
     // 
@@ -128,8 +128,8 @@ int main(){
     trades = res.trades;
     assert(trades.empty());
     tob = eng.top_of_book();
-    assert(tob.best_ask.value().price == 103);
-    assert(tob.best_ask.value().qty == 7);
+    assert(tob.ask.price == 103);
+    assert(tob.ask.qty == 7);
 
     res = eng.process_new_order(8, Side::Buy, 104, 2);
     assert(res.accepted == true);
@@ -160,8 +160,8 @@ int main(){
     assert(trades[0].sell_id == 7);
     assert(trades[0].price == 103);
     assert(trades[0].qty == 2);
-    assert(!tob.best_bid.has_value());
-    assert(!tob.best_ask.has_value());
+    assert(!tob.has_bid);
+    assert(!tob.has_ask);
 
     // Buys:
     // 
@@ -190,10 +190,10 @@ int main(){
     assert(trades[1].sell_id == 12);
     assert(trades[1].price == 101);
     assert(trades[1].qty == 3);
-    assert(!tob.best_bid.has_value());
-    assert(tob.best_ask.has_value());
-    assert(tob.best_ask.value().price == 101);
-    assert(tob.best_ask.value().qty == 2);
+    assert(!tob.has_bid);
+    assert(tob.has_ask);
+    assert(tob.ask.price == 101);
+    assert(tob.ask.qty == 2);
 
     // Buys:
     // 
@@ -204,4 +204,3 @@ int main(){
 
     return 0;
 }
-

@@ -168,12 +168,12 @@ TopOfBook OrderBook::top_of_book() const{
     TopOfBook tob;
 
     if (has_best_bid()){
-        tob.bid = PriceLevel{best_bid_quantity(), best_bid_price()};
+        tob.bid = PriceLevel{best_bid_price(), best_bid_quantity()};
         tob.has_bid = true;
     }
 
     if (has_best_ask()){
-        tob.ask = PriceLevel{best_ask_quantity(), best_ask_price()};
+        tob.ask = PriceLevel{best_ask_price(), best_ask_quantity()};
         tob.has_ask = true;
     }
 
